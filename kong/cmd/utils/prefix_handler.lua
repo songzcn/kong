@@ -202,7 +202,8 @@ local function prepare_prefix(kong_config, nginx_custom_template_path)
   end
 
   -- generate default SSL certs if needed
-  if kong_config.ssl and not kong_config.ssl_cert and not kong_config.ssl_cert_key then
+  if table.concat(kong_config.proxy_listen, ","):find("ssl") and
+     not kong_config.ssl_cert and not kong_config.ssl_cert_key then
     log.verbose("SSL enabled, no custom certificate set: using default certificate")
     local ok, err = gen_default_ssl_cert(kong_config)
     if not ok then
@@ -211,7 +212,8 @@ local function prepare_prefix(kong_config, nginx_custom_template_path)
     kong_config.ssl_cert = kong_config.ssl_cert_default
     kong_config.ssl_cert_key = kong_config.ssl_cert_key_default
   end
-  if kong_config.admin_ssl and not kong_config.admin_ssl_cert and not kong_config.admin_ssl_cert_key then
+  if table.concat(kong_config.admin_listen, ","):find("ssl") and
+     not kong_config.admin_ssl_cert and not kong_config.admin_ssl_cert_key then
     log.verbose("Admin SSL enabled, no custom certificate set: using default certificate")
     local ok, err = gen_default_ssl_cert(kong_config, true)
     if not ok then
@@ -266,7 +268,12 @@ local function prepare_prefix(kong_config, nginx_custom_template_path)
 
   for k, v in pairs(kong_config) do
     if type(v) == "table" then
-      v = table.concat(v, ",")
+      if (getmetatable(v) or {}).__tostring then
+        -- the 'tostring' meta-method knows how to serialize
+        v = tostring(v)
+      else
+        v = table.concat(v, ",")
+      end
     end
     if v ~= "" then
       buf[#buf+1] = k .. " = " .. tostring(v)
