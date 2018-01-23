@@ -65,8 +65,7 @@ upstream kong_upstream {
 server {
     server_name kong;
 > for i = 1, #proxy_listeners do
->   if proxy_listeners[i].ssl then _ssl_in_use = true end
-    listen $(proxy_listeners[i].listener) ${{PROXY_PROTOCOL}};
+    listen $(proxy_listeners[i].listener);
 > end
     error_page 400 404 408 411 412 413 414 417 /kong_error_handler;
     error_page 500 502 503 504 /kong_error_handler;
@@ -76,7 +75,7 @@ server {
 
     client_body_buffer_size ${{CLIENT_BODY_BUFFER_SIZE}};
 
-> if _ssl_in_use then
+> if proxy_ssl_enabled then
     ssl_certificate ${{SSL_CERT}};
     ssl_certificate_key ${{SSL_CERT_KEY}};
     ssl_protocols TLSv1.1 TLSv1.2;
@@ -160,7 +159,6 @@ server {
 server {
     server_name kong_admin;
 > for i = 1, #admin_listeners do
->   if admin_listeners[i].ssl then _admin_ssl_in_use = true end
     listen $(admin_listeners[i].listener);
 > end
 
@@ -170,7 +168,7 @@ server {
     client_max_body_size 10m;
     client_body_buffer_size 10m;
 
-> if _admin_ssl_in_use then
+> if admin_ssl_enabled then
     ssl_certificate ${{ADMIN_SSL_CERT}};
     ssl_certificate_key ${{ADMIN_SSL_CERT_KEY}};
     ssl_protocols TLSv1.1 TLSv1.2;

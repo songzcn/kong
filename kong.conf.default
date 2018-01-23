@@ -73,19 +73,29 @@
 #------------------------------------------------------------------------------
 
 #proxy_listen = 0.0.0.0:8000, 0.0.0.0:8443 ssl
-                         # Address and port on which Kong will accept HTTP
-                         # requests, comma separated. The `ssl` suffix sets
-                         # it to accept HTTPS, and `http2` accepts HTTP2.
-                         # This is the public-facing entrypoint of Kong, to
-                         # which your consumers will make requests.
+                         # Comma-separated list of addresses and ports on
+                         # which the proxy server should listen to. The proxy
+                         # server is the public entrypoint of Kong, which
+                         # proxies traffic from your consumers. The `ssl`
+                         # suffix requires that all connections through this
+                         # port be made through SSL, and `http2` allows for
+                         # HTTP/2 connections. And finally the `proxy_protocol`
+                         # flag is allowed.
                          # If set to `off` the proxy will be disabled.
+# Note: See http://nginx.org/en/docs/http/ngx_http_core_module.html#listen for
+# a description of the accepted formats for this and other *_listen values.
+#
+# See https://www.nginx.com/resources/admin-guide/proxy-protocol/ for more
+# details about the `proxy_protocol` parameter.
 
 #admin_listen = 127.0.0.1:8000, 127.0.0.1:8443 ssl
-                         # Address and port on which Kong will expose
-                         # entrypoints to the Admin API. The `ssl` suffix sets
-                         # it to accept HTTPS, and `http2` accepts HTTP2.
+                         # Comma-separated list of addresses and ports on
+                         # which the admin interface is listening.
                          # This API lets you configure and manage Kong,
                          # and should be kept private and secured.
+                         # The `ssl` suffix requires that all connections
+                         # through this port be made through SSL, and `http2`
+                         # allows for HTTP/2 connections.
                          # If set to `off` the Admin API will be disabled.
 
 #nginx_user = nobody nobody      # Defines user and group credentials used by
@@ -194,18 +204,13 @@
                                  # This value sets the ngx_http_realip_module
                                  # directive of the same name in the Nginx
                                  # configuration.
-                                 #
-                                 # If this value receives `proxy_protocol`, the
-                                 # `proxy_protocol` parameter will be appended
-                                 # to the `listen` directive of the Nginx
-                                 # template.
+                                 # If set to `proxy_protocol` then at least one
+                                 # of the `proxy_listen` entries should have
+                                 # the `proxy_protocol` flag enabled.
 # Note:
 #
 # See http://nginx.org/en/docs/http/ngx_http_realip_module.html#real_ip_header
 # for a description of this directive.
-#
-# See https://www.nginx.com/resources/admin-guide/proxy-protocol/ for more
-# details about the `proxy_protocol` parameter.
 
 #real_ip_recursive = off         # This value sets the ngx_http_realip_module
                                  # directive of the same name in the Nginx

@@ -10,6 +10,7 @@ local function count_server_blocks(filename)
   return count
 end
 
+
 local function get_listeners(filename)
   local file = assert(utils.readfile(filename))
   local result = {}
@@ -36,6 +37,7 @@ describe("Admin API - interface", function()
   after_each(function()
     helpers.stop_kong()
   end)
+
 
   it("disabled", function()
     assert(helpers.start_kong({

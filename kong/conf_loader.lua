@@ -382,20 +382,28 @@ end
 -- @return list of parsed entries, each entry having fields `ip` (normalized string),
 -- `port` (number), `ssl` (bool), `http2` (bool), `listener` (string, full listener).
 local function parse_listeners(values)
-  local flags = { "ssl", "http2" }
+  local flags = { "ssl", "http2", "proxy_protocol" }
   local usage = "must be of form: [off] | <ip>:<port> [" ..
                 table.concat(flags, "] [") .. "], [... next entry ...]"
 
   local list = {}
-  if values[1]:match("^%s*off") then
+  if pl_stringx.strip(values[1]) == "off" then
     return list
   end
   for _, entry in ipairs(values) do
     -- parse the flags
     local remainder, listener, cleaned_flags = parse_option_flags(entry, flags)
     -- verify IP for remainder
-    local ip = utils.normalize_ip(remainder)
-    if (not ip) or ip.type == "name" or (not ip.port) then
+    local ip
+    if utils.hostname_type(remainder) == "name" then
+      -- it's not an IP address, so a name/wildcard/regex
+      ip = {}
+      ip.host, ip.port = remainder:match("(.+):([%d]+)$")
+    else
+      -- It's an IPv4 or IPv6, just normalize it
+      ip = utils.normalize_ip(remainder)
+    end
+    if (not ip) or (not ip.port) then
       return nil, usage
     end
     listener.ip = ip.host
@@ -535,12 +543,30 @@ local function load(path, custom_conf)
     mt = { __tostring = function() return "" end }
 
     conf.proxy_listeners, err = parse_listeners(conf.proxy_listen)
-    if err then return nil, "proxy_listen " .. err end
+    if err then
+      return nil, "proxy_listen " .. err
+    end
     setmetatable(conf.proxy_listeners, mt)  -- do not pass on, parse again
+    conf.proxy_ssl_enabled = false
+    for _, listener in ipairs(conf.proxy_listeners) do
+      if listener.ssl == true then
+        conf.proxy_ssl_enabled = true
+        break
+      end
+    end
 
     conf.admin_listeners, err = parse_listeners(conf.admin_listen)
-    if err then return nil, "admin_listen " .. err end
+    if err then
+      return nil, "admin_listen " .. err
+    end
     setmetatable(conf.admin_listeners, mt)  -- do not pass on, parse again
+    conf.admin_ssl_enabled = false
+    for _, listener in ipairs(conf.admin_listeners) do
+      if listener.ssl == true then
+        conf.admin_ssl_enabled = true
+        break
+      end
+    end
   end
 
   -- load absolute paths

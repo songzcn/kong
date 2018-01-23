@@ -586,6 +586,7 @@ describe("Upstream header(s)", function()
   describe("(using trusted proxy protocol configuration values)", function()
 
     setup(start_kong {
+      proxy_listen      = "0.0.0.0:9000 proxy_protocol",
       real_ip_header    = "proxy_protocol",
       real_ip_recursive = "on",
       trusted_ips       = "127.0.0.1,172.16.0.1,192.168.0.1",
@@ -691,6 +692,7 @@ describe("Upstream header(s)", function()
   describe("(using non-trusted proxy protocol configuration values)", function()
 
     setup(start_kong {
+      proxy_listen      = "0.0.0.0:9000 proxy_protocol",
       real_ip_header    = "proxy_protocol",
       real_ip_recursive = "on",
       trusted_ips       = "10.0.0.1,172.16.0.1,192.168.0.1",
