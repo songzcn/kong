@@ -9,10 +9,8 @@ describe("NGINX conf compiler", function()
   describe("gen_default_ssl_cert()", function()
     local conf = assert(conf_loader(helpers.test_conf_path, {
       prefix = "ssl_tmp",
-      ssl = true,
       ssl_cert = "spec/fixtures/kong_spec.crt",
       ssl_cert_key = "spec/fixtures/kong_spec.key",
-      admin_ssl = true,
       admin_ssl_cert = "spec/fixtures/kong_spec.crt",
       admin_ssl_cert_key = "spec/fixtures/kong_spec.key",
     }))
@@ -425,10 +423,10 @@ describe("NGINX conf compiler", function()
       it("does not create SSL dir if using custom cert", function()
         local conf = conf_loader(nil, {
           prefix = tmp_config.prefix,
-          ssl = true,
+          proxy_listen = "127.0.0.1:8000 ssl",
+          admin_listen = "127.0.0.1:8001 ssl",
           ssl_cert = "spec/fixtures/kong_spec.crt",
           ssl_cert_key = "spec/fixtures/kong_spec.key",
-          admin_ssl = true,
           admin_ssl_cert = "spec/fixtures/kong_spec.crt",
           admin_ssl_cert_key = "spec/fixtures/kong_spec.key",
         })
@@ -439,8 +437,8 @@ describe("NGINX conf compiler", function()
       it("generates default SSL cert", function()
         local conf = conf_loader(nil, {
           prefix = tmp_config.prefix,
-          ssl = true,
-          admin_ssl = true
+          proxy_listen = "127.0.0.1:8000 ssl",
+          admin_listen = "127.0.0.1:8001 ssl",
         })
 
         assert(prefix_handler.prepare_prefix(conf))

@@ -128,13 +128,13 @@
                                  # This value is ignored if `ssl_cipher_suite`
                                  # is not `custom`.
 
-#ssl_cert =                      # If `ssl` is enabled, the absolute path to
+#ssl_cert =                      # If ssl is enabled, the absolute path to
                                  # the SSL certificate for the
-                                 # `proxy_listen_ssl` address.
+                                 # `proxy_listen` ssl addresses.
 
-#ssl_cert_key =                  # If `ssl` is enabled, the absolute path to
-                                 # the SSL key for the `proxy_listen_ssl`
-                                 # address.
+#ssl_cert_key =                  # If ssl is enabled, the absolute path to
+                                 # the SSL key for the `proxy_listen` ssl
+                                 # addresses.
 
 #client_ssl = off                # Determines if Nginx should send client-side
                                  # SSL certificates when proxying requests.
@@ -153,13 +153,13 @@
                                  # and currently cannot be configured on a
                                  # per-API basis.
 
-#admin_ssl_cert =                # If `admin_ssl` is enabled, the absolute path
-                                 # to the SSL certificate for the
-                                 # `admin_listen_ssl` address.
+#admin_ssl_cert =                # If ssl is enabled on the admin interface,
+                                 # the absolute path to the SSL certificate
+                                 # for the `admin_listen` addresses.
 
-#admin_ssl_cert_key =            # If `admin_ssl` is enabled, the absolute path
-                                 # to the SSL key for the `admin_listen_ssl`
-                                 # address.
+#admin_ssl_cert_key =            # If ssl is enabled on the admin interface,
+                                 # the absolute path to the SSL key for the 
+                                 # `admin_listen` addresses.
 
 #upstream_keepalive = 60         # Sets the maximum number of idle keepalive
                                  # connections to upstream servers that are

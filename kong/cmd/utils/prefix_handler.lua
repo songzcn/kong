@@ -110,9 +110,6 @@ local function compile_conf(kong_config, conf_template)
   compile_env = pl_tablex.merge(compile_env, kong_config, true) -- union
   compile_env.dns_resolver = table.concat(compile_env.dns_resolver, " ")
 
-  compile_env.http2 = kong_config.http2 and " http2" or ""
-  compile_env.admin_http2 = kong_config.admin_http2 and " http2" or ""
-
   local post_template = pl_template.substitute(conf_template, compile_env)
   return string.gsub(post_template, "(${%b{}})", function(w)
     local name = w:sub(4, -3)
@@ -201,9 +198,7 @@ local function prepare_prefix(kong_config, nginx_custom_template_path)
   end
 
   -- generate default SSL certs if needed
-  local has_ssl = (table.concat(kong_config.proxy_listen, ",") .. " "):find("%sssl%s")
-
-  if has_ssl and not kong_config.ssl_cert and
+  if kong_config.proxy_ssl_enabled and not kong_config.ssl_cert and
      not kong_config.ssl_cert_key then
     log.verbose("SSL enabled, no custom certificate set: using default certificate")
     local ok, err = gen_default_ssl_cert(kong_config)
@@ -213,7 +208,7 @@ local function prepare_prefix(kong_config, nginx_custom_template_path)
     kong_config.ssl_cert = kong_config.ssl_cert_default
     kong_config.ssl_cert_key = kong_config.ssl_cert_key_default
   end
-  if has_ssl and not kong_config.admin_ssl_cert and
+  if kong_config.admin_ssl_enabled and not kong_config.admin_ssl_cert and
      not kong_config.admin_ssl_cert_key then
     log.verbose("Admin SSL enabled, no custom certificate set: using default certificate")
     local ok, err = gen_default_ssl_cert(kong_config, true)

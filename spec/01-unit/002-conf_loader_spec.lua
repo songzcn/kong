@@ -96,12 +96,27 @@ describe("Configuration loader", function()
     assert.equal("0.0.0.0:8443 ssl", conf.proxy_listeners[2].listener)
   end)
   it("extracts 'off' from proxy_listen/admin_listen", function()
-    local conf = assert(conf_loader(nil, {
-          proxy_listen = "off",
-          admin_listen = "off",
-        }))
+      local conf
+    conf = assert(conf_loader(nil, {
+      proxy_listen = "off",
+      admin_listen = "off",
+    }))
     assert.same({}, conf.proxy_listeners)
     assert.same({}, conf.admin_listeners)
+    -- off with multiple entries
+    conf = assert(conf_loader(nil, {
+      proxy_listen = "off, 0.0.0.0:9000",
+      admin_listen = "off, 127.0.0.1:9001",
+    }))
+    assert.same({}, conf.proxy_listeners)
+    assert.same({}, conf.admin_listeners)
+    -- not off with names containing 'off'
+    conf = assert(conf_loader(nil, {
+      proxy_listen = "offshore.com:9000",
+      admin_listen = "offshore.com:9001",
+    }))
+    assert.same("offshore.com", conf.proxy_listeners[1].ip)
+    assert.same("offshore.com", conf.admin_listeners[1].ip)
   end)
   it("attaches prefix paths", function()
     local conf = assert(conf_loader())
@@ -323,16 +338,23 @@ describe("Configuration loader", function()
       assert.equal("bad cassandra contact point 'addr1:9042': port must be specified in cassandra_port", err)
       assert.is_nil(conf)
     end)
-    it("does not check SSL cert and key if SSL is off", function()
-      local conf, err = conf_loader(nil, {
-        proxy_listen = "127.0.0.1:123",
-        ssl_cert = "/path/cert.pem"
-      })
-      assert.is_nil(err)
-      assert.is_table(conf)
-    end)
     describe("SSL", function()
       describe("proxy", function()
+        it("does not check SSL cert and key if SSL is off", function()
+          local conf, err = conf_loader(nil, {
+            proxy_listen = "127.0.0.1:123",
+            ssl_cert = "/path/cert.pem"
+          })
+          assert.is_nil(err)
+          assert.is_table(conf)
+          -- specific case with 'ssl' in the name
+          local conf, err = conf_loader(nil, {
+            proxy_listen = "ssl:23",
+            proxy_ssl_cert = "/path/cert.pem"
+          })
+          assert.is_nil(err)
+          assert.is_table(conf)
+        end)
         it("requires both proxy SSL cert and key", function()
           local conf, err = conf_loader(nil, {
             ssl_cert = "/path/cert.pem"
@@ -477,6 +499,21 @@ describe("Configuration loader", function()
         end)
       end)
       describe("admin", function()
+        it("does not check SSL cert and key if SSL is off", function()
+          local conf, err = conf_loader(nil, {
+            admin_listen = "127.0.0.1:123",
+            admin_ssl_cert = "/path/cert.pem"
+          })
+          assert.is_nil(err)
+          assert.is_table(conf)
+          -- specific case with 'ssl' in the name
+          local conf, err = conf_loader(nil, {
+            admin_listen = "ssl:23",
+            admin_ssl_cert = "/path/cert.pem"
+          })
+          assert.is_nil(err)
+          assert.is_table(conf)
+        end)
         it("requires both admin SSL cert and key", function()
           local conf, err = conf_loader(nil, {
             admin_ssl_cert = "/path/cert.pem"

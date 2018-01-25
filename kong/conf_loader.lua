@@ -224,7 +224,7 @@ local function check_and_infer(conf)
     end
   end
 
-  if table.concat(conf.proxy_listen, ","):find("ssl") then
+  if (table.concat(conf.proxy_listen, ",") .. " "):find("%sssl[%s,]") then
     if conf.ssl_cert and not conf.ssl_cert_key then
       errors[#errors+1] = "ssl_cert_key must be specified"
     elseif conf.ssl_cert_key and not conf.ssl_cert then
@@ -254,7 +254,7 @@ local function check_and_infer(conf)
     end
   end
 
-  if table.concat(conf.admin_listen, ","):find("ssl") then
+  if (table.concat(conf.admin_listen, ",") .. " "):find("%sssl[%s,]") then
     if conf.admin_ssl_cert and not conf.admin_ssl_cert_key then
       errors[#errors+1] = "admin_ssl_cert_key must be specified"
     elseif conf.admin_ssl_cert_key and not conf.admin_ssl_cert then
@@ -403,7 +403,7 @@ local function parse_listeners(values)
       -- It's an IPv4 or IPv6, just normalize it
       ip = utils.normalize_ip(remainder)
     end
-    if (not ip) or (not ip.port) then
+    if not (ip and ip.port) then
       return nil, usage
     end
     listener.ip = ip.host
